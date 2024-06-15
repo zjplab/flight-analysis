@@ -428,7 +428,10 @@ class _Scrape:
 	@staticmethod
 	def _make_url_request(url, driver):
 		driver.get(url)
-
+		try:
+			driver.find_element(By.XPATH, '//*[@id="yDmH0d"]/c-wiz/div/div/div/div[2]/div[1]/div[3]/div[1]/div[1]/form[2]/div/div/button').click()
+		except:
+			pass
 		# Waiting and initial XPATH cleaning
 		WebDriverWait(driver, timeout = 10).until(lambda d: len(_Scrape._get_flight_elements(d)) > 100)
 		results = _Scrape._get_flight_elements(driver)
