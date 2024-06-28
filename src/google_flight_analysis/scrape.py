@@ -234,7 +234,7 @@ class _Scrape:
 	'''
 		Set properties upon scraper called.
 	'''
-	def _set_properties(self, *args):
+	def  _set_properties(self, *args):
 		'''
 			args Format
 
@@ -276,8 +276,8 @@ class _Scrape:
 			self._origin, self._dest, self._date = [args[0], args[1]], [args[1], args[0]], args[2:]
 
 			assert len(self._origin) == len(self._dest) == len(self._date), "Issue with array lengths, talk to dev"
-			self._url = self._make_url()
 			self._type = 'round-trip'
+			self._url = self._make_url(self._type)
 
 		# chain-trip, chain is component of 3s, check that last one is an actual date to not confuse w perfect
 		elif len(args) >= 3 and len(args) % 3 == 0 and len(args[-1]) == 10 and type(args[-1]) == str:
@@ -378,26 +378,33 @@ class _Scrape:
 		self._data = pd.concat(results, ignore_index = True)
 
 
-	def _make_url(self):
+	def _make_url(self, type = 'one-way'):
 		urls = []
-		if self._type != 'round-trip':
-			for i in range(len(self._date)):
-				urls += [
-					'https://www.google.com/travel/flights?hl=en&q=Flights%20to%20{org}%20from%20{dest}%20on%20{date}%20oneway&curr=USD'.format(
-						dest = self._dest[i],
-						org = self._origin[i],
-						date = self._date[i]
-					)
-				]
-		else:
+		
+		match type:
+			case 'round-trip':
 				urls = [
 					'https://www.google.com/travel/flights?hl=en&q=Flights%20to%20{dest}%20from%20{org}%20on%20{depart_date}%20roundtrip%20return%20on%20{return_date}&curr=USD'.format(
-						dest = self._dest[0][0],
-						org = self._origin[0][0],
+						dest = self._dest[0],
+						org = self._origin[0],
 						depart_date = self._date[0],
 						return_date = self._date[1]
 					)
 				]
+				print("Round Trip!")
+   
+			case _:
+				for i in range(len(self._date)):
+					urls += [
+						'https://www.google.com/travel/flights?hl=en&q=Flights%20to%20{org}%20from%20{dest}%20on%20{date}%20oneway&curr=USD'.format(
+							dest = self._dest[i],
+							org = self._origin[i],
+							date = self._date[i]
+						)
+					]
+				print("One Way!")
+   
+
 		return urls
 
 	@staticmethod
