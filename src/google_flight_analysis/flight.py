@@ -122,10 +122,10 @@ class Flight:
 			# num stops
 			self._num_stops = 0 if arg == 'Nonstop' else int(arg.split()[0])
 
-		elif arg.endswith('CO2') and self._co2 is None:
+		elif 'CO2' in arg and self._co2 is None:
 			# co2
 			self._co2 = int(arg.split()[0])
-		elif arg.endswith('emissions') and self._emissions is None:
+		elif 'emissions' in arg and self._emissions is None:
 			# emmision
 			emission_val = arg.split()[0]
 			self._emissions = 0 if emission_val == 'Avg' else int(emission_val[:-1])
@@ -140,7 +140,7 @@ class Flight:
 			# 1 stop + time at stop
 			# or multiple stops
 			self._stops = arg
-		elif len(arg) > 0 and arg != 'Separate tickets booked together' and arg != 'Change of airport':
+		elif len(arg) > 0 and arg != 'Separate tickets booked together' and arg != 'Change of airport' and 'Avoids as much' not in arg:
 			val = arg.split(',')
 			val = [elem.split('Operated')[0] for elem in val]
 			self._airline = ','.join(val)
