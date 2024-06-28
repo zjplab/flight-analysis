@@ -3,7 +3,8 @@ from typing import Any
 import pandas as pd
 from google_flight_analysis.scrape import Scrape, ScrapeObjects, date_format
 from google_flight_analysis.fuzzy.utils.date_process import DateParser
-
+import concurrent
+from concurrent.futures import ThreadPoolExecutor
 class FuzzyDateScrape():
     '''
     The differenee here is that in the ending of each date, we can a +n and or -n 
@@ -117,11 +118,28 @@ class FuzzyDateScrape():
         merged_df.to_excel(file_name)
         return merged_df
 
+
+
+    def search_and_merge_multithread(self, file_name="output.xlsx"):
+        def scrape_and_collect_data(scrape_obj):
+            ScrapeObjects(scrape_obj)
+            return scrape_obj.data
+
+        with ThreadPoolExecutor() as executor:
+            # Submit all scraping tasks to the executor and store futures in a list
+            futures = [executor.submit(scrape_and_collect_data, scrape_obj) for scrape_obj in self.generated_scrape_objs]
+            # Collect results based on the order of submission
+            data_frame = [future.result() for future in futures]
+
+        merged_df = pd.concat(data_frame)
+        merged_df.to_excel(file_name)
+        return merged_df
 # test
 if __name__=='__main__':
-    print("Testing One Way:")
-    test = FuzzyDateScrape('AMS', 'PVG', '2024-09-27+5-2')
-    test.search_and_merge()
-    # print("\nTesting Round Trip:")
-    # test2 = FuzzyDateScrape('AMS', 'PVG', '2024-09-27+5-2', '2024-10-01+5-2')
-    # test2.search_and_merge()
+    # print("Testing One Way:")
+    # test = FuzzyDateScrape('AMS', 'PVG', '2024-09-27+5-2')
+    # test.search_and_merge_multithread()
+    
+    print("\nTesting Round Trip:")
+    test2 = FuzzyDateScrape('AMS', 'PVG', '2024-09-27+5-2', '2024-10-01+5-2')
+    test2.search_and_merge_multithread()

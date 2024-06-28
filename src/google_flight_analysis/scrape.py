@@ -380,14 +380,24 @@ class _Scrape:
 
 	def _make_url(self):
 		urls = []
-		for i in range(len(self._date)):
-			urls += [
-				'https://www.google.com/travel/flights?hl=en&q=Flights%20to%20{org}%20from%20{dest}%20on%20{date}%20oneway&curr=USD'.format(
-					dest = self._dest[i],
-					org = self._origin[i],
-					date = self._date[i]
-				)
-			]
+		if self._type != 'round-trip':
+			for i in range(len(self._date)):
+				urls += [
+					'https://www.google.com/travel/flights?hl=en&q=Flights%20to%20{org}%20from%20{dest}%20on%20{date}%20oneway&curr=USD'.format(
+						dest = self._dest[i],
+						org = self._origin[i],
+						date = self._date[i]
+					)
+				]
+		else:
+				urls = [
+					'https://www.google.com/travel/flights?hl=en&q=Flights%20to%20{dest}%20from%20{org}%20on%20{depart_date}%20roundtrip%20return%20on%20{return_date}&curr=USD'.format(
+						dest = self._dest[0][0],
+						org = self._origin[0][0],
+						depart_date = self._date[0],
+						return_date = self._date[1]
+					)
+				]
 		return urls
 
 	@staticmethod
