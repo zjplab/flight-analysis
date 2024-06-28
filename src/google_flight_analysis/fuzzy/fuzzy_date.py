@@ -52,15 +52,14 @@ class FuzzyDateScrape():
         elif len(args) == 4:
             assert len(args[0]) == 3 and isinstance(args[0], str), "Issue with arg 0, see docs"
             assert len(args[1]) == 3 and isinstance(args[1], str), "Issue with arg 1, see docs"
-            assert len(args[2]) == 10 and isinstance(args[2], str), "Issue with arg 2, see docs"
-            assert len(args[3]) == 10 and isinstance(args[3], str), "Issue with arg 3, see docs"
-
-            assert datetime.strptime(args[2], date_format) < datetime.strptime(args[3], date_format), "Dates are not in order. Make sure to provide them in increasing order in YYYY-MM-DD format."
+            assert isinstance(args[2], str), "Issue with arg 2, see docs"
+            assert isinstance(args[3], str), "Issue with arg 3, see docs"
 
             self._origin, self._dest, self._date = [args[0], args[1]], [args[1], args[0]], args[2:]
-
             assert len(self._origin) == len(self._dest) == len(self._date), "Issue with array lengths, talk to dev"
             self._type = 'round-trip'
+            combinations = DateParser.generate_date_combinations(self._date)
+            self.generated_scrape_objs = [Scrape(args[0], args[1], date_list[0].strftime("%Y-%m-%d"), date_list[1].strftime("%Y-%m-%d")) for date_list in combinations if date_list[0] < date_list[1]]
 
         # chain-trip, chain is component of 3s, check that last one is an actual date to not confuse w perfect
         elif len(args) >= 3 and len(args) % 3 == 0 and len(args[-1]) == 10 and type(args[-1]) == str:
@@ -109,14 +108,20 @@ class FuzzyDateScrape():
         else:
             raise NotImplementedError()
 
-
+    def search_and_merge(self, file_name="output.xlsx"):
+        data_frame = []
+        for scrape_obj in self.generated_scrape_objs:
+            ScrapeObjects(scrape_obj)
+            data_frame.append(scrape_obj.data)
+        merged_df = pd.concat(data_frame)
+        merged_df.to_excel(file_name)
+        return merged_df
 
 # test
 if __name__=='__main__':
+    print("Testing One Way:")
     test = FuzzyDateScrape('AMS', 'PVG', '2024-09-27+5-2')
-    data_frame = []
-    for scrape_obj in test.generated_scrape_objs:
-        ScrapeObjects(scrape_obj)
-        data_frame.append(scrape_obj.data)
-    merged_df = pd.concat(data_frame)
-    merged_df.to_csv('test.csv')
+    test.search_and_merge()
+    # print("\nTesting Round Trip:")
+    # test2 = FuzzyDateScrape('AMS', 'PVG', '2024-09-27+5-2', '2024-10-01+5-2')
+    # test2.search_and_merge()
