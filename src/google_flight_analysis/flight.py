@@ -124,7 +124,7 @@ class Flight:
 
 		elif 'CO2' in arg and self._co2 is None:
 			# co2
-			self._co2 = int(arg.split()[0])
+			self._co2 = int(arg.split()[0].replace(',',''))
 		elif 'emissions' in arg and self._emissions is None:
 			# emmision
 			emission_val = arg.split()[0]
