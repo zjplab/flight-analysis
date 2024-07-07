@@ -266,8 +266,8 @@ class _Scrape:
 
 		# round-trip
 		elif len(args) == 4:
-			assert len(args[0]) == 3 and type(args[0]) == str, "Issue with arg 0, see docs"
-			assert len(args[1]) == 3 and type(args[1]) == str, "Issue with arg 1, see docs"
+			assert type(args[0]) == str, "Issue with arg 0, see docs"
+			assert type(args[1]) == str, "Issue with arg 1, see docs"
 			assert len(args[2]) == 10 and type(args[2]) == str, "Issue with arg 2, see docs"
 			assert len(args[3]) == 10 and type(args[3]) == str, "Issue with arg 3, see docs"
 
@@ -375,8 +375,10 @@ class _Scrape:
 	'''
 	def _scrape_data(self, driver):
 		results = [self._get_results(url, self._date[i], driver) for i, url in enumerate(self._url)]
-		self._data = pd.concat(results, ignore_index = True)
-
+		try:
+			self._data = pd.concat(results, ignore_index = True)
+		except:
+			print("No results found for query.")
 
 	def _make_url(self, type = 'one-way'):
 		urls = []
