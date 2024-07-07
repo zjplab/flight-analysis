@@ -25,7 +25,8 @@ class Flight:
 		self._time_leave = None
 		self._time_arrive = None
 		self._trash = []
-
+		self._round_trip = False
+		self._round_trip_return_date = None
 		self._parse_args(*args)
 
 	def __repr__(self):
@@ -104,6 +105,22 @@ class Flight:
 	def time_arrive(self):
 		return self._time_arrive
 
+	@property
+	def round_trip(self):
+		return self._round_trip
+
+	@round_trip.setter
+	def round_trip(self, x : bool) -> None:
+		self._round_trip = x
+  
+	@property
+	def round_trip_return_date(self):
+		return self._round_trip_return_date
+
+	@round_trip_return_date.setter
+	def round_trip_return_date(self, x : str) -> None:
+		self._round_trip_return_date = x
+     
 	def _classify_arg(self, arg):
 		if ('AM' in arg or 'PM' in arg) and len(self._times) < 2 and ':' in arg:
 			# arrival or departure time
@@ -140,10 +157,13 @@ class Flight:
 			# 1 stop + time at stop
 			# or multiple stops
 			self._stops = arg
-		elif len(arg) > 0 and arg != 'Separate tickets booked together' and arg != 'Change of airport' and 'Avoids as much' not in arg:
+		elif len(arg) > 0 and arg != 'Separate tickets booked together' and arg != 'Change of airport' and 'Avoids as much' not in arg \
+      		and "round trip" not in arg:
 			val = arg.split(',')
 			val = [elem.split('Operated')[0] for elem in val]
 			self._airline = ','.join(val)
+		elif 'round trip' in arg:
+			self._round_trip = True
 		else:
 			self._trash += [arg]
 			# airline and other stuff idk
@@ -155,6 +175,8 @@ class Flight:
 	def _parse_args(self, args):
 		for arg in args:
 			self._classify_arg(arg)
+		if self._round_trip:
+			self._round_trip_return_date = self._time_leave + timedelta(days = 1)
 
 	@staticmethod
 	def dataframe(flights):
@@ -171,7 +193,9 @@ class Flight:
 			'Access Date' : [],
 			#'Stop Location' : [],
 			'CO2 Emission (kg)' : [],
-			'Emission Diff (%)' : []
+			'Emission Diff (%)' : [],
+			'Round Trip' : [],
+			'Round Trip Return Date' : []
 		}
 
 		for flight in flights:
@@ -190,7 +214,9 @@ class Flight:
 			data['Emission Diff (%)'] += [flight.emissions]
 			data['Price ($)'] += [flight.price]
 			data['Access Date'] += [datetime.today().replace(hour = 0, minute = 0, second = 0, microsecond = 0)]
-
+			data['Round Trip'] += [flight.round_trip]
+			data['Round Trip Return Date'] += [flight.round_trip_return_date]
+   
 		return pd.DataFrame(data)
 
 

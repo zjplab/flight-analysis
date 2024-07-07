@@ -141,5 +141,5 @@ if __name__=='__main__':
     # test.search_and_merge_multithread()
     
     print("\nTesting Round Trip:")
-    test2 = FuzzyDateScrape('AMS', 'PVG', '2024-09-27+5-2', '2024-10-01+5-2')
+    test2 = FuzzyDateScrape('AMS', 'PVG', '2024-09-27+5-2', '2024-10-01+10-2')
     test2.search_and_merge_multithread()

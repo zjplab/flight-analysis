@@ -11,7 +11,7 @@ from datetime import date, datetime, timedelta
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-
+import re
 from google_flight_analysis.flight import *
 
 __all__ = ['Scrape', '_Scrape', 'ScrapeObjects']
@@ -425,6 +425,18 @@ class _Scrape:
 	@staticmethod
 	def _clean_results(result, date):
 		res2 = [x.encode("ascii", "ignore").decode().strip() for x in result]
+  
+		#return_dates, special handling for round trips
+		return_dates = None 
+		# Regular expression to match the returning date pattern
+		pattern = r"returning (\d{4}-\d{2}-\d{2})"
+
+		for item in res2:
+			match = re.search(pattern, item)
+			if match:
+				# Extract the date from the matched group and stop searching
+				return_dates = match.group(1)
+				break
 
 		start = res2.index("Sort by:")+1
 		mid_start = res2.index("Price insights")
@@ -440,6 +452,11 @@ class _Scrape:
 		matches = [i for i, x in enumerate(res3) if len(x) > 2 and ((x[-2] != '+' and (x.endswith('PM') or x.endswith('AM')) and ':' in x) or x[-2] == '+')][::2]
 		flights = [Flight(date, res3[matches[i]:matches[i+1]]) for i in range(len(matches)-1)]
 
+		#post processing for round trip return dates
+		for flight in flights:
+			if flight.round_trip:
+				flight.round_trip_return_date = return_dates
+    
 		return flights
 
 	@staticmethod
